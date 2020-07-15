@@ -29,7 +29,7 @@ namespace BracketsBrackets
         /// </summary>
         public BracketPlayer GetLoser(int game)
         {
-            return p1.games[game - 1] > p2.games[game - 1] ? p1 : p2;
+            return p1.games[game - 1] < p2.games[game - 1] ? p1 : p2;
         }
 
         public override bool Equals(object obj)

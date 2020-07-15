@@ -9,7 +9,8 @@ namespace BracketsBrackets
     {
         public static Random random;
 
-        private ArrayList Games;
+        private List<BracketPlayer> Players { get; set; }
+        private List<BracketGame> Games;
 
         public int NumOfPlayers { get; private set; }
         public int MaxPlayers { get; set; }
@@ -22,6 +23,8 @@ namespace BracketsBrackets
         public Bracket(int max)
         {
             MaxPlayers = max;
+            Players = new List<BracketPlayer>();
+            Games = new List<BracketGame>();
         }
 
 
@@ -30,23 +33,37 @@ namespace BracketsBrackets
             return NumOfPlayers < MaxPlayers;
         }
 
-        public void AddGame(BracketGame game)
+        public void AddPlayer(BracketPlayer player)
         {
-            Games.Add(game);
+            Players.Add(player);
             NumOfPlayers++;
+        }
+
+        public void Populate()
+        {
+            if(NumOfPlayers == MaxPlayers)
+            {
+                Shuffle();
+                for (int i = 0; i < Players.Count; i+=2)
+                {
+                    Console.WriteLine(Players[i].name);
+                    Console.WriteLine(Players[i+1].name);
+                    Games.Add(new BracketGame(Players[i], Players[i + 1]));
+                }
+            }
         }
 
         public BracketGame GetWinners()
         {
-            return GetWinners( new ArrayList(Games), 1);
+            return GetWinners( new List<BracketGame>(Games), 1);
         }
 
-        private BracketGame GetWinners(ArrayList gamesTemp, int gameNum)
+        private BracketGame GetWinners(List<BracketGame> gamesTemp, int gameNum)
         {
-            if (gamesTemp.Count == 1) return (BracketGame)gamesTemp[0];
+            if (gamesTemp.Count == 1) return gamesTemp[0];
             else
             {
-                ArrayList playersTemp = new ArrayList();
+                List<BracketPlayer> playersTemp = new List<BracketPlayer>();
                 foreach (BracketGame game in gamesTemp)
                 {
                     playersTemp.Add(game.GetWinner(gameNum));
@@ -54,9 +71,24 @@ namespace BracketsBrackets
                 gamesTemp.Clear();
                 for (int i = 0; i < playersTemp.Count; i+=2)
                 {
-                    gamesTemp.Add(new BracketGame((BracketPlayer)playersTemp[i], (BracketPlayer)playersTemp[i + 1]));
+                    gamesTemp.Add(new BracketGame(playersTemp[i], playersTemp[i + 1]));
                 }
                 return GetWinners(gamesTemp, gameNum++);
+            }
+        }
+
+        private static Random rng = new Random();
+
+        public void Shuffle()
+        {
+            int n = Players.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                BracketPlayer value = Players[k];
+                Players[k] = Players[n];
+                Players[n] = value;
             }
         }
     }
