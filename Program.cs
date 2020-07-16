@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace BracketsBrackets
 {
@@ -11,19 +9,21 @@ namespace BracketsBrackets
             string[] players = System.IO.File.ReadAllLines("tournament.txt");
             Bracket B = new Bracket(8);
 
+            // normally, the BracketTourney class would handle this, but it doesn't exist yet.
             foreach (string s in players)
             {
                 // each string is structured as a space-delimited list, like so: 
                 // name int1 int2 int3
+                // with either 3 or 2 ints
                 
                 string name = s.Split(' ')[0]; // gets the first string, the name.
 
-                string[] nums = s.Substring(s.IndexOf(' ')+1).Split(' ');
+                string[] nums = s.Substring(s.IndexOf(' ')+1).Split(' '); //ignores the first string, then spits the scores into an array
                 int[] scores = new int[nums.Length];
 
                 for (int i = 0; i < nums.Length; i++)
                 {
-                    Console.WriteLine(nums[i]);
+                    
                     scores[i] = Convert.ToInt32(nums[i]);
                 }
 
