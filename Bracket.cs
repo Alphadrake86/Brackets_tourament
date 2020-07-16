@@ -5,18 +5,16 @@ namespace BracketsBrackets
 {
     class Bracket
     {
-        public static Random random;
+        private static Random rng = new Random();
 
-        private List<BracketPlayer> Players { get; set; }
-        private List<BracketGame> Games;
+
+        public List<BracketPlayer> Players { get; private set; }
+        public List<BracketGame> Games { get; private set; }
 
         public int NumOfPlayers { get; private set; }
         public int MaxPlayers { get; set; }
 
-        static Bracket()
-        {
-            random = new Random();
-        }
+        
 
         public Bracket(int max)
         {
@@ -75,10 +73,12 @@ namespace BracketsBrackets
             }
         }
 
-        private static Random rng = new Random();
+        public bool IsSeeded(BracketGame bracket)
+        {
+            return Games.Contains(bracket);
+        }
 
-
-        // 
+        // the Fisher-Yates unsorting algorithm
         public void Shuffle()
         {
             int n = Players.Count;
