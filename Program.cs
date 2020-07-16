@@ -13,18 +13,22 @@ namespace BracketsBrackets
 
             foreach (string s in players)
             {
-                string temp = s + " ";
-                string name = temp.Substring(0, temp.IndexOf(" "));
-                temp = temp.Substring(temp.IndexOf(" ")+1);
-                int[] nums = new int[3];
+                // each string is structured as a space-delimited list, like so: 
+                // name int1 int2 int3
+                
+                string name = s.Split(' ')[0]; // gets the first string, the name.
 
-                for (int i = 0; i < 3; i++)
+                string[] nums = s.Substring(s.IndexOf(' ')+1).Split(' ');
+                int[] scores = new int[nums.Length];
+
+                for (int i = 0; i < nums.Length; i++)
                 {
-                    
-                    nums[i] = Convert.ToInt32( temp.Substring(0, temp.IndexOf(" ")));
-                    temp = temp.Substring(temp.IndexOf(" ") + 1);
+                    Console.WriteLine(nums[i]);
+                    scores[i] = Convert.ToInt32(nums[i]);
                 }
-                B.AddPlayer(new BracketPlayer(name, nums));
+
+                
+                B.AddPlayer(new BracketPlayer(name, scores));
 
             }
 

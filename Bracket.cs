@@ -79,6 +79,8 @@ namespace BracketsBrackets
 
         private static Random rng = new Random();
 
+
+        // 
         public void Shuffle()
         {
             int n = Players.Count;
