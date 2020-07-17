@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BracketsBrackets
@@ -7,28 +8,43 @@ namespace BracketsBrackets
     class BracketsTourney
     {
         private List<Bracket> Brackets;
-        private List<BracketPlayer> Players;
+        private Dictionary<BracketPlayer, int> Players;
 
-        public BracketsTourney()
+        private int TourneySize;
+        private int PlayersPerBracket;
+        private int GAMES_IN_SINGLES = 4;
+        private int GAMES_IN_DOUBLES = 2;
+
+
+        public BracketsTourney(bool isDoubles)
         {
             Brackets = new List<Bracket>();
+            Players = new Dictionary<BracketPlayer, int>();
+
+            TourneySize = isDoubles ? GAMES_IN_DOUBLES : GAMES_IN_SINGLES; // Doubles brackets have only 2 games per bracket
+
+            PlayersPerBracket = TourneySize * 2; // 2 players per game
         }
 
         public List<BracketGame> GetAllWinners()
         {
             List<BracketGame> winners = new List<BracketGame>();
 
-            foreach (Bracket b in Brackets)
-            {
-                winners.Add(b.GetWinners());
-            }
+            Brackets.ForEach( b => winners.Add( b.GetWinners() ));
 
             return winners;
         }
 
         public void AddPlayer(BracketPlayer player)
         {
-            Players.Add(player);
+            if (Players.ContainsKey(player))
+            {
+                Players[player]++;
+            }
+            else
+            {
+                Players.Add(player, 1);
+            }
         }
 
         public void AddPlayersFromFile(string[] strings)
@@ -56,5 +72,36 @@ namespace BracketsBrackets
             }
         }
 
+        /// <summary>
+        /// Determines the number of people needed to fill out the brackets
+        /// </summary>
+        /// <returns></returns>
+        public int GetEmptySlots()
+        {
+            if(GetTotalPlayers() == GetReqdBrackets() * PlayersPerBracket)
+            {
+                return 0;
+            }
+            int curPlayers = GetTotalPlayers();
+            int 
+        }
+
+        /// <summary>
+        /// gets the number of bracket entries, duplicates included
+        /// </summary>
+        /// <returns></returns>
+        private int GetTotalPlayers()
+        {
+            return Players.Values.Sum();
+        }
+
+        /// <summary>
+        /// Gets the number of brackets required based off of the number of participants
+        /// </summary>
+        /// <returns></returns>
+        private int GetReqdBrackets()
+        {
+
+        }
     }
 }
