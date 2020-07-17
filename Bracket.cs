@@ -35,6 +35,14 @@ namespace BracketsBrackets
             NumOfPlayers++;
         }
 
+        public void AddGame(BracketGame game)
+        {
+            Games.Add(game);
+            Players.Add(game.p1);
+            Players.Add(game.p2);
+            NumOfPlayers += 2;
+        }
+
         public void Populate()
         {
             if(NumOfPlayers == MaxPlayers)
@@ -76,6 +84,16 @@ namespace BracketsBrackets
         public bool IsSeeded(BracketGame bracket)
         {
             return Games.Contains(bracket);
+        }
+
+        public bool IsEligible(BracketGame bracket)
+        {
+            return !(Players.Contains(bracket.p1) && Players.Contains(bracket.p2));
+        }
+
+        public bool HasPlayer(BracketPlayer player)
+        {
+            return Players.Contains(player);
         }
 
         // the Fisher-Yates unsorting algorithm
