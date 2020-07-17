@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace BracketsBrackets
@@ -70,6 +71,7 @@ namespace BracketsBrackets
 
 
                 AddEntry(new BracketPlayer(name, scores));
+                AddEntry(new BracketPlayer(name, scores));
 
             }
         }
@@ -108,11 +110,12 @@ namespace BracketsBrackets
                 PlayerTemp = new Dictionary<BracketPlayer, int>(Players);
                 Games.Clear();
 
-                while (GetTotalEntries(PlayerTemp) == 0)
+                while (GetTotalEntries(PlayerTemp) != 0)
                 {
                     GetTopPlayer(PlayerTemp, out BracketPlayer player1, out int entries);
+                    
                     List<BracketPlayer> validPlayers = GetValidMatchups(player1,PlayerTemp);
-
+                    
                     for (int i = 0; i < entries; i++)
                     {
                         if(validPlayers.Count == 0)
@@ -121,6 +124,8 @@ namespace BracketsBrackets
                             break;
                         }
                         BracketPlayer player2 = validPlayers[rng.Next(validPlayers.Count)];
+                        
+
 
                         Games.Add(new BracketGame(player1, player2));
                         RemoveEntry(player1, PlayerTemp);
@@ -129,10 +134,9 @@ namespace BracketsBrackets
                     }
                     if (failing) break;
                 }
-                
+                failing = !GenerateBrackets(Shuffle(Games));
+                Console.WriteLine("hi");
             } while (failing);
-
-            GenerateBrackets(Games);
 
         }
 
@@ -143,7 +147,12 @@ namespace BracketsBrackets
             
         }
 
-        private void GenerateBrackets(List<BracketGame> games)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="games"></param>
+        /// <returns>the success status of the seeding</returns>
+        private bool GenerateBrackets(List<BracketGame> games)
         {
             Brackets.Clear();
 
@@ -151,18 +160,70 @@ namespace BracketsBrackets
             {
                 Brackets.Add(new Bracket(TourneySize));
             }
+
+            foreach (BracketGame game in games)
+            {
+                if(!AddGame(game)) return false;
+            }
+
+            return true;
+            
+        }
+
+        /// <summary>
+        /// places the seeded players into brackets. if it gets stuck, returns false.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        private bool AddGame(BracketGame game)
+        {
+            foreach (Bracket bracket in Brackets)
+            {
+                if(bracket.IsEligible(game) && !bracket.IsFull())
+                {
+                    bracket.AddGame(game);
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         private List<BracketPlayer> GetValidMatchups(BracketPlayer player, Dictionary<BracketPlayer, int> players)
         {
-            return players.Where(x => x.Value > 0)
-                .Where(x => x.Key != player)
+            var a = players.Where(x => x.Value > 0)
                 .Select(x => x.Key).ToList();
+            a.Remove(player);
+            return a;
         }
 
         public void RemoveEntry(BracketPlayer player, Dictionary<BracketPlayer, int> players)
         {
                     players[player]--;
+        }
+
+        public List<BracketGame> Shuffle(List<BracketGame> game)
+
+        {
+
+            int n = game.Count;
+
+            while (n > 1)
+
+            {
+
+                n--;
+
+                int k = rng.Next(n + 1);
+
+                BracketGame value = game[k];
+
+                game[k] = game[n];
+
+                game[n] = value;
+
+            }
+            return game;
         }
 
         #region fullness methods
