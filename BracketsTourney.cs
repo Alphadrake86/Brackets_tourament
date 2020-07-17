@@ -12,6 +12,7 @@ namespace BracketsBrackets
 
         private int TourneySize;
         private int PlayersPerBracket;
+
         private int GAMES_IN_SINGLES = 4;
         private int GAMES_IN_DOUBLES = 2;
 
@@ -35,7 +36,7 @@ namespace BracketsBrackets
             return winners;
         }
 
-        public void AddPlayer(BracketPlayer player)
+        public void AddEntry(BracketPlayer player)
         {
             if (Players.ContainsKey(player))
             {
@@ -44,6 +45,21 @@ namespace BracketsBrackets
             else
             {
                 Players.Add(player, 1);
+            }
+        }
+
+        public void RemoveEntry(BracketPlayer player)
+        {
+            if (Players.TryGetValue(player, out int entries))
+            {
+                if (entries == 1)
+                {
+                    Players.Remove(player);
+                }
+                else
+                {
+                    Players[player]--;
+                }
             }
         }
 
@@ -72,22 +88,28 @@ namespace BracketsBrackets
             }
         }
 
+        private List<BracketPlayer> GetValidMatchups(BracketPlayer player)
+        {
+            return Players.Where(x => x.Value > 0)
+                .Where(x => x.Key != player)
+                .Select(x => x.Key).ToList();
+        }
+
+        #region fullness methods
+
         /// <summary>
         /// Determines the number of people needed to fill out the brackets
         /// </summary>
         /// <returns></returns>
         public int GetEmptySlots()
         {
-            if(GetTotalPlayers() == GetReqdBrackets() * PlayersPerBracket)
-            {
-                return 0;
-            }
-            int curPlayers = GetTotalPlayers();
-            int 
+            int reqdPlayers = GetReqdBrackets() * PlayersPerBracket;
+
+            return reqdPlayers - GetTotalPlayers();
         }
 
         /// <summary>
-        /// gets the number of bracket entries, duplicates included
+        /// gets the total number of bracket entries, duplicates included
         /// </summary>
         /// <returns></returns>
         private int GetTotalPlayers()
@@ -96,12 +118,22 @@ namespace BracketsBrackets
         }
 
         /// <summary>
-        /// Gets the number of brackets required based off of the number of participants
+        /// Gets the number of brackets required based off of the number of participants 
+        /// and the number of entries each participant has signed up for
         /// </summary>
         /// <returns></returns>
         private int GetReqdBrackets()
         {
+            int bracketsByPlayers = (int) Math.Ceiling(GetTotalPlayers() / 8.0);
 
+            int bracketsBySignUps = Players.Values.Max();
+
+            return Math.Max(bracketsByPlayers, bracketsBySignUps);
+            
         }
+
+        #endregion
     }
+
+
 }
