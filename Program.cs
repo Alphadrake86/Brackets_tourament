@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace BracketsBrackets
 {
@@ -6,7 +7,8 @@ namespace BracketsBrackets
     {
         static void Main(string[] args)
         {
-            string[] players = System.IO.File.ReadAllLines("tournament.txt");
+            Random rng = new Random();
+            string[] players = File.ReadAllLines("largeTourney.txt");
 
             BracketsTourney bracketsTourney = new BracketsTourney(false);
 
@@ -14,18 +16,22 @@ namespace BracketsBrackets
 
             bracketsTourney.GenerateTournament();
 
-            /*foreach (BracketGame winners in bracketsTourney.GetAllWinners())
+            foreach (BracketGame winners in bracketsTourney.GetAllWinners())
             {
-                Console.WriteLine("First Place: " + winners.GetWinner(3).name);
+                Console.WriteLine("First Place:  " + winners.GetWinner(3).name);
 
                 Console.WriteLine("Second Place: " + winners.GetLoser(3).name);
-            }*/
-            for (int i = 0; i < 5000; i++)
-            {
-                bracketsTourney.GenerateTournament();
-                bracketsTourney.GetAllWinners();
+
+                Console.WriteLine();
             }
+            //for (int i = 0; i < 5000; i++)
+            //{
+            //    bracketsTourney.GenerateTournament();
+            //    bracketsTourney.GetAllWinners();
+            //}
+
+            // "largeTourney.txt" // "tournament.txt"
         }
-     
+
     }
 }
