@@ -5,20 +5,18 @@ namespace BracketsBrackets
 {
     class Bracket
     {
-        private static Random rng = new Random();
-
-
+        
         public List<BracketPlayer> Players { get; private set; }
         public List<BracketGame> Games { get; private set; }
 
-        public int NumOfPlayers { get; private set; }
-        public int MaxPlayers { get; set; }
+        
+        public int MaxGames { get; set; }
 
         
 
         public Bracket(int max)
         {
-            MaxPlayers = max;
+            MaxGames = max;
             Players = new List<BracketPlayer>();
             Games = new List<BracketGame>();
         }
@@ -26,28 +24,20 @@ namespace BracketsBrackets
 
         public bool IsFull()
         {
-            return NumOfPlayers < MaxPlayers;
+            return Games.Count >= MaxGames;
         }
 
-        public void AddPlayer(BracketPlayer player)
+        
+
+        public void AddGame(BracketGame game)
         {
-            Players.Add(player);
-            NumOfPlayers++;
+            Games.Add(game);
+            Players.Add(game.p1);
+            Players.Add(game.p2);
+            
         }
 
-        public void Populate()
-        {
-            if(NumOfPlayers == MaxPlayers)
-            {
-                Shuffle();
-                for (int i = 0; i < Players.Count; i+=2)
-                {
-                    Console.WriteLine(Players[i].name);
-                    Console.WriteLine(Players[i+1].name);
-                    Games.Add(new BracketGame(Players[i], Players[i + 1]));
-                }
-            }
-        }
+        
 
         public BracketGame GetWinners()
         {
@@ -56,19 +46,26 @@ namespace BracketsBrackets
 
         private BracketGame GetWinners(List<BracketGame> gamesTemp, int gameNum)
         {
-            if (gamesTemp.Count == 1) return gamesTemp[0];
+            //Console.Write("| ");
+            if (gamesTemp.Count == 1)
+            {
+                //Console.WriteLine(gamesTemp[0].p1 + ", " + gamesTemp[0].p2 + " |");
+                return gamesTemp[0];
+            }
             else
             {
                 List<BracketPlayer> playersTemp = new List<BracketPlayer>();
                 foreach (BracketGame game in gamesTemp)
                 {
+                    //Console.Write(game.p1 + ", " + game.p2 + " |");
                     playersTemp.Add(game.GetWinner(gameNum));
                 }
                 gamesTemp.Clear();
-                for (int i = 0; i < playersTemp.Count; i+=2)
+                for (int i = 0; i < playersTemp.Count; i += 2)
                 {
                     gamesTemp.Add(new BracketGame(playersTemp[i], playersTemp[i + 1]));
                 }
+                //Console.WriteLine();
                 return GetWinners(gamesTemp, gameNum++);
             }
         }
@@ -78,18 +75,16 @@ namespace BracketsBrackets
             return Games.Contains(bracket);
         }
 
-        // the Fisher-Yates unsorting algorithm
-        public void Shuffle()
+        public bool IsEligible(BracketGame bracket)
         {
-            int n = Players.Count;
-            while (n > 1)
-            {
-                n--;
-                int k = rng.Next(n + 1);
-                BracketPlayer value = Players[k];
-                Players[k] = Players[n];
-                Players[n] = value;
-            }
+            return !(Players.Contains(bracket.p1) || Players.Contains(bracket.p2));
         }
+
+        public bool HasPlayer(BracketPlayer player)
+        {
+            return Players.Contains(player);
+        }
+
+        
     }
 }

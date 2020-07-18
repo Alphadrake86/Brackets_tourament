@@ -30,5 +30,10 @@ namespace BracketsBrackets
         {
             return HashCode.Combine(name, games);
         }
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }

@@ -47,5 +47,10 @@ namespace BracketsBrackets
         {
             return HashCode.Combine(p1, p2);
         }
+
+        public override string ToString()
+        {
+            return p1.ToString() + " " + p2.ToString();
+        }
     }
 }
