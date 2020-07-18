@@ -6,8 +6,6 @@ namespace BracketsBrackets
     class Bracket
     {
         
-
-
         public List<BracketPlayer> Players { get; private set; }
         public List<BracketGame> Games { get; private set; }
 
@@ -48,21 +46,26 @@ namespace BracketsBrackets
 
         private BracketGame GetWinners(List<BracketGame> gamesTemp, int gameNum)
         {
-            if (gamesTemp.Count == 1) return gamesTemp[0];
+            //Console.Write("| ");
+            if (gamesTemp.Count == 1)
+            {
+                //Console.WriteLine(gamesTemp[0].p1 + ", " + gamesTemp[0].p2 + " |");
+                return gamesTemp[0];
+            }
             else
             {
                 List<BracketPlayer> playersTemp = new List<BracketPlayer>();
                 foreach (BracketGame game in gamesTemp)
                 {
-                    Console.Write(game.p1 + " " + game.p2 + " ");
+                    //Console.Write(game.p1 + ", " + game.p2 + " |");
                     playersTemp.Add(game.GetWinner(gameNum));
                 }
                 gamesTemp.Clear();
-                for (int i = 0; i < playersTemp.Count; i+=2)
+                for (int i = 0; i < playersTemp.Count; i += 2)
                 {
                     gamesTemp.Add(new BracketGame(playersTemp[i], playersTemp[i + 1]));
                 }
-                Console.WriteLine();
+                //Console.WriteLine();
                 return GetWinners(gamesTemp, gameNum++);
             }
         }
