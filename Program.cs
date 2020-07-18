@@ -14,13 +14,17 @@ namespace BracketsBrackets
 
             bracketsTourney.GenerateTournament();
 
-            foreach (BracketGame winners in bracketsTourney.GetAllWinners())
+            /*foreach (BracketGame winners in bracketsTourney.GetAllWinners())
             {
                 Console.WriteLine("First Place: " + winners.GetWinner(3).name);
 
                 Console.WriteLine("Second Place: " + winners.GetLoser(3).name);
+            }*/
+            for (int i = 0; i < 5000; i++)
+            {
+                bracketsTourney.GenerateTournament();
+                bracketsTourney.GetAllWinners();
             }
-            Console.ReadLine();
         }
      
     }

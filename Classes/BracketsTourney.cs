@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
+
 
 namespace BracketsBrackets
 {
@@ -17,6 +16,7 @@ namespace BracketsBrackets
 
         private int GAMES_IN_SINGLES = 4;
         private int GAMES_IN_DOUBLES = 2;
+        private int MAX_TRIES_BEFORE_FAIL = 1000;
 
 
         public BracketsTourney(bool isDoubles)
@@ -72,6 +72,13 @@ namespace BracketsBrackets
 
                 AddEntry(new BracketPlayer(name, scores));
                 AddEntry(new BracketPlayer(name, scores));
+                AddEntry(new BracketPlayer(name, scores));
+                AddEntry(new BracketPlayer(name, scores));
+                AddEntry(new BracketPlayer(name, scores));
+                AddEntry(new BracketPlayer(name, scores));
+                AddEntry(new BracketPlayer(name, scores));
+
+
 
             }
         }
@@ -104,6 +111,7 @@ namespace BracketsBrackets
             Dictionary<BracketPlayer, int> PlayerTemp;
             List<BracketGame> Games = new List<BracketGame>();
             bool failing;
+            int tries = 0;
             do
             {
                 failing = false;
@@ -134,8 +142,13 @@ namespace BracketsBrackets
                     }
                     if (failing) break;
                 }
+
                 failing = !GenerateBrackets(Shuffle(Games));
-                Console.WriteLine("hi");
+                //Console.WriteLine(".");
+                if (++tries>MAX_TRIES_BEFORE_FAIL)
+                {
+                    throw new Exception("Too many iterations. Possible Impossible situation.");
+                }
             } while (failing);
 
         }
@@ -166,6 +179,10 @@ namespace BracketsBrackets
                 if(!AddGame(game)) return false;
             }
 
+            foreach (Bracket bracket in Brackets)
+            {
+                if (!bracket.IsFull()) return false;
+            }
             return true;
             
         }
