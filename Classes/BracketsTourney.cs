@@ -8,7 +8,7 @@ namespace BracketsBrackets
     class BracketsTourney
     {
         private List<Bracket> Brackets;
-        private Dictionary<BracketPlayer, int> Players;
+        private PlayerList Players;
         private static Random rng = new Random();
 
         private int TourneySize;
@@ -22,7 +22,7 @@ namespace BracketsBrackets
         public BracketsTourney(bool isDoubles)
         {
             Brackets = new List<Bracket>();
-            Players = new Dictionary<BracketPlayer, int>();
+            Players = new PlayerList();
 
             TourneySize = isDoubles ? GAMES_IN_DOUBLES : GAMES_IN_SINGLES; // Doubles brackets have only 2 games per bracket
 
@@ -40,14 +40,12 @@ namespace BracketsBrackets
 
         public void AddEntry(BracketPlayer player)
         {
-            if (Players.ContainsKey(player))
-            {
-                Players[player]++;
-            }
-            else
-            {
-                Players.Add(player, 1);
-            }
+            Players.AddEntry(player);
+        }
+
+        public void RemoveEntry(BracketPlayer player)
+        {
+            Players.RemoveEntry(player);
         }
 
         public void AddPlayersFromFile(string[] strings)
@@ -71,30 +69,9 @@ namespace BracketsBrackets
 
 
                 AddEntry(new BracketPlayer(name, scores));
-                AddEntry(new BracketPlayer(name, scores));
-                AddEntry(new BracketPlayer(name, scores));
-                AddEntry(new BracketPlayer(name, scores));
-                AddEntry(new BracketPlayer(name, scores));
-                AddEntry(new BracketPlayer(name, scores));
-                AddEntry(new BracketPlayer(name, scores));
 
 
 
-            }
-        }
-
-        public void RemoveEntry(BracketPlayer player)
-        {
-            if (Players.TryGetValue(player, out int entries))
-            {
-                if (entries == 1)
-                {
-                    Players.Remove(player);
-                }
-                else
-                {
-                    Players[player]--;
-                }
             }
         }
 
@@ -108,63 +85,70 @@ namespace BracketsBrackets
                 return;
             }
 
-            Dictionary<BracketPlayer, int> PlayerTemp;
+            PlayerList PlayerTemp;
             List<BracketGame> Games = new List<BracketGame>();
             bool failing;
             int tries = 0;
             do
             {
-                failing = false;
-                PlayerTemp = new Dictionary<BracketPlayer, int>(Players);
-                Games.Clear();
+                
+                    failing = false;
+                    PlayerTemp = new PlayerList(Players);
+                    Games.Clear();
 
-                while (GetTotalEntries(PlayerTemp) != 0)
+                while (PlayerTemp.GetTotalEntries() != 0)
                 {
-                    GetTopPlayer(PlayerTemp, out BracketPlayer player1, out int entries);
-                    
-                    List<BracketPlayer> validPlayers = GetValidMatchups(player1,PlayerTemp);
-                    
+                    PlayerTemp.GetTopPlayer(out BracketPlayer player1, out int entries);
+
+                    List<BracketPlayer> validPlayers = PlayerTemp.GetValidMatchups(player1);
+
                     for (int i = 0; i < entries; i++)
                     {
-                        if(validPlayers.Count == 0)
+                        if (validPlayers.Count == 0)
                         {
                             failing = true;
                             break;
                         }
                         BracketPlayer player2 = validPlayers[rng.Next(validPlayers.Count)];
-                        
+
 
 
                         Games.Add(new BracketGame(player1, player2));
-                        RemoveEntry(player1, PlayerTemp);
-                        RemoveEntry(player2, PlayerTemp);
+                        PlayerTemp.RemoveEntry(player1);
+                        PlayerTemp.RemoveEntry(player2);
                         validPlayers.Remove(player2);
                     }
+
                     if (failing) break;
                 }
+                
+                
 
-                failing = !GenerateBrackets(Shuffle(Games));
-                //Console.WriteLine(".");
-                if (++tries>MAX_TRIES_BEFORE_FAIL)
+                if (!GenerateBrackets(Shuffle(Games)))
                 {
-                    throw new Exception("Too many iterations. Possible Impossible situation.");
+                    failing = true;
+                    
                 }
+
+
+                if (failing)
+                {
+                    if (++tries > MAX_TRIES_BEFORE_FAIL)
+                    {
+                        throw new SeedingFailedException("Too many iterations. Possible Impossible situation.");
+                    }
+
+                    continue;
+                }
+
+
+
             } while (failing);
 
-        }
-
-        private void GetTopPlayer(Dictionary<BracketPlayer, int> players, out BracketPlayer player, out int entries)
-        {
-            entries = players.Values.Max();
-            player = players.First(x => x.Value == players.Values.Max()).Key;
             
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="games"></param>
-        /// <returns>the success status of the seeding</returns>
+        
         private bool GenerateBrackets(List<BracketGame> games)
         {
             Brackets.Clear();
@@ -176,7 +160,8 @@ namespace BracketsBrackets
 
             foreach (BracketGame game in games)
             {
-                if(!AddGame(game)) return false;
+                bool addWorked = TryAddGame(game);
+                if (!addWorked) return false;
             }
 
             foreach (Bracket bracket in Brackets)
@@ -192,33 +177,22 @@ namespace BracketsBrackets
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        private bool AddGame(BracketGame game)
+        private bool TryAddGame(BracketGame game)
         {
             foreach (Bracket bracket in Brackets)
             {
+                
                 if(bracket.IsEligible(game) && !bracket.IsFull())
                 {
                     bracket.AddGame(game);
                     return true;
                 }
             }
-            
+
+
             return false;
         }
-
-        private List<BracketPlayer> GetValidMatchups(BracketPlayer player, Dictionary<BracketPlayer, int> players)
-        {
-            var a = players.Where(x => x.Value > 0)
-                .Select(x => x.Key).ToList();
-            a.Remove(player);
-            return a;
-        }
-
-        public void RemoveEntry(BracketPlayer player, Dictionary<BracketPlayer, int> players)
-        {
-                    players[player]--;
-        }
-
+        
         public List<BracketGame> Shuffle(List<BracketGame> game)
 
         {
@@ -243,7 +217,6 @@ namespace BracketsBrackets
             return game;
         }
 
-        #region fullness methods
 
         /// <summary>
         /// Determines the number of people needed to fill out the brackets
@@ -253,21 +226,7 @@ namespace BracketsBrackets
         {
             int reqdPlayers = GetReqdBrackets() * PlayersPerBracket;
 
-            return reqdPlayers - GetTotalEntries();
-        }
-
-        /// <summary>
-        /// gets the total number of bracket entries, duplicates included
-        /// </summary>
-        /// <returns></returns>
-        private int GetTotalEntries()
-        {
-            return Players.Values.Sum();
-        }
-
-        private int GetTotalEntries(Dictionary<BracketPlayer, int> players)
-        {
-            return players.Values.Sum();
+            return reqdPlayers - Players.GetTotalEntries();
         }
 
         /// <summary>
@@ -277,16 +236,99 @@ namespace BracketsBrackets
         /// <returns></returns>
         private int GetReqdBrackets()
         {
-            int bracketsByPlayers = (int) Math.Ceiling(GetTotalEntries() / 8.0);
+            int bracketsByPlayers = (int) Math.Ceiling(Players.GetTotalEntries() / 8.0);
 
-            int bracketsBySignUps = Players.Values.Max();
+            int bracketsBySignUps = Players.GetMaxEntries();
 
             return Math.Max(bracketsByPlayers, bracketsBySignUps);
             
         }
 
-        #endregion
     }
 
+    class PlayerList
+    {
+        public Dictionary<BracketPlayer, int> Players;
 
+        public PlayerList()
+        {
+            Players = new Dictionary<BracketPlayer, int>();
+        }
+
+        public PlayerList(PlayerList p)
+        {
+            Players = new Dictionary<BracketPlayer, int>(p.Players);
+        }
+
+        public void AddEntry(BracketPlayer player)
+        {
+            if (Players.ContainsKey(player))
+            {
+                Players[player]++;
+            }
+            else
+            {
+                Players.Add(player, 1);
+            }
+        }
+
+        public void RemoveEntry(BracketPlayer player)
+        {
+            if (Players.TryGetValue(player, out int entries))
+            {
+                if (entries == 1)
+                {
+                    Players.Remove(player);
+                }
+                else
+                {
+                    Players[player]--;
+                }
+            }
+        }
+
+        /// <summary>
+        /// gets the total number of bracket entries, duplicates included
+        /// </summary>
+        /// <returns></returns>
+        public int GetTotalEntries()
+        {
+            return Players.Values.Sum();
+        }
+
+        public int GetMaxEntries()
+        {
+            return Players.Values.Max();
+        }
+
+        public List<BracketPlayer> GetValidMatchups(BracketPlayer player)
+        {
+            var a = Players.Where(x => x.Value > 0)
+                .Select(x => x.Key).ToList();
+
+            a.Remove(player);
+            return a;
+        }
+
+        public void GetTopPlayer(out BracketPlayer player, out int entries)
+        {
+            entries = Players.Values.Max();
+            player = Players.First(x => x.Value == Players.Values.Max()).Key;
+
+        }
+    }
+
+    /// <summary>
+    /// a simple exception that makes the seeding a little bit easier to read.
+    /// </summary>
+    class SeedingFailedException : Exception
+    {
+        
+
+        public SeedingFailedException(string message)
+            :base(message)
+        {
+
+        }
+    }
 }
