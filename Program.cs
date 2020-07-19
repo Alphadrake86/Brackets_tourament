@@ -6,9 +6,8 @@ namespace BracketsBrackets
     class Program
     {
         static void Main(string[] args)
-        {
-            Random rng = new Random();
-            string[] players = File.ReadAllLines("largeTourney.txt");
+        { 
+            string[] players = File.ReadAllLines("tournament.txt");
 
             BracketsTourney bracketsTourney = new BracketsTourney(false);
 
@@ -16,21 +15,21 @@ namespace BracketsBrackets
 
             bracketsTourney.GenerateTournament();
 
-            foreach (BracketGame winners in bracketsTourney.GetAllWinners())
-            {
-                Console.WriteLine("First Place:  " + winners.GetWinner(3).name);
-
-                Console.WriteLine("Second Place: " + winners.GetLoser(3).name);
-
-                Console.WriteLine();
-            }
-            //for (int i = 0; i < 5000; i++)
+            //foreach (BracketGame winners in bracketsTourney.GetAllWinners())
             //{
-            //    bracketsTourney.GenerateTournament();
-            //    bracketsTourney.GetAllWinners();
-            //}
+            //    Console.WriteLine("First Place:  " + winners.GetWinner(3).name);
 
-            // "largeTourney.txt" // "tournament.txt"
+            //    Console.WriteLine("Second Place: " + winners.GetLoser(3).name);
+
+            //    Console.WriteLine();
+            //}
+            for (int i = 0; i < 5000; i++)
+            {
+                bracketsTourney.GenerateTournament();
+                bracketsTourney.GetAllWinners();
+            }
+
+            //"largeTourney.txt" // "tournament.txt"
         }
 
     }
