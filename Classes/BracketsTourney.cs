@@ -67,8 +67,11 @@ namespace BracketsBrackets
                     scores[i] = Convert.ToInt32(nums[i]);
                 }
 
-
-                AddEntry(new BracketPlayer(name, scores));
+                for (int i = 0; i < 30; i++)
+                {
+                    AddEntry(new BracketPlayer(name, scores));
+                }
+                
 
 
 
@@ -148,6 +151,14 @@ namespace BracketsBrackets
             
         }
 
+        public void PrintAllGames()
+        {
+            foreach (var item in Brackets)
+            {
+                item.PrintGame();
+                Console.WriteLine();
+            }
+        }
         
         private bool GenerateBrackets(List<BracketGame> games)
         {
@@ -236,7 +247,7 @@ namespace BracketsBrackets
         /// <returns></returns>
         private int GetReqdBrackets()
         {
-            int bracketsByPlayers = (int) Math.Ceiling(Players.GetTotalEntries() / 8.0);
+            int bracketsByPlayers = (int) Math.Ceiling(Players.GetTotalEntries() / (double) PlayersPerBracket);
 
             int bracketsBySignUps = Players.GetMaxEntries();
 

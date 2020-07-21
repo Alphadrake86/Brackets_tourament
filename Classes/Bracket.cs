@@ -12,6 +12,8 @@ namespace BracketsBrackets
         
         public int MaxGames { get; set; }
 
+        public int MaxRounds { get; private set; }
+
         
 
         public Bracket(int max)
@@ -19,6 +21,10 @@ namespace BracketsBrackets
             MaxGames = max;
             Players = new List<BracketPlayer>();
             Games = new List<BracketGame>();
+
+            // the number of games should be a power of two. the +1
+            // is to account for the fact that there are 2 players per game
+            MaxRounds = (int) Math.Log2(MaxGames) + 1;
         }
 
 
@@ -68,6 +74,44 @@ namespace BracketsBrackets
                 //Console.WriteLine();
                 return GetWinners(gamesTemp, gameNum++);
             }
+        }
+
+        public void PrintGame()
+        {
+            for (int i = 0; i < MaxRounds; i++)
+            {
+                PrintRound(i);
+            }
+        }
+
+        private List<BracketGame> GetRound(int round)
+        {
+            
+            if (round == 0)
+            {
+                return new List<BracketGame>(Games);
+            }
+
+            List<BracketGame> lastRound = GetRound(round - 1);
+            List<BracketGame> thisRound = new List<BracketGame>();
+
+            for (int i = 0; i < lastRound.Count; i+=2)
+            {
+                thisRound.Add(new BracketGame(lastRound[i].GetWinner(round), lastRound[i + 1].GetWinner(round)));
+            }
+
+            return thisRound;
+        }
+
+        private void PrintRound(int round)
+        {
+            foreach (BracketGame bracket in GetRound(round))
+            {
+                bool p1win = bracket.GetWinner(round + 1) == bracket.p1;
+                Console.Write($"|{(p1win?"*":"")}{bracket.p1.name} ({bracket.p1.games[round]}), " +
+                    $"{(p1win ? "" : "*")}{bracket.p2.name} ({bracket.p2.games[round]})|");
+            }
+            Console.WriteLine();
         }
 
         public bool IsSeeded(BracketGame bracket)
